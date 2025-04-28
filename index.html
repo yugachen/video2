@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>影片紀錄器</title>
+  <style>
+    /* 样式同之前，略 */
+  </style>
+</head>
+<body>
+
+  <h1>影片紀錄器</h1>
+  <div id="studentID">載入中...</div>
+
+  <video id="video" controls>
+    <source src="995.mp4" type="video/mp4">
+    您的瀏覽器不支援影片播放。
+  </video>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/你的-AppsScript-網址/exec";
+    let currentID = 1;
+
+    const video = document.getElementById('video');
+    const studentID = document.getElementById('studentID');
+
+    async function getNextID() {
+      const res = await fetch(scriptURL);
+      const json = await res.json();
+      return json.nextID || 1;
+    }
+
+    async function init() {
+      currentID = await getNextID();
+      studentID.innerText = `學生編號：${currentID}`;
+    }
+
+    video.addEventListener('pause', async () => {
+      if (video.currentTime > 0 && !video.ended) {
+        const timestamp = new Date().toISOString();
+        const pausedTime = video.currentTime.toFixed(1);
+
+        const description = `影片第 ${pausedTime} 秒`;
+
+        fetch(scriptURL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            id: currentID,
+            source: "影片截圖紀錄器",
+            description: description,
+            time: timestamp
+          })
+        });
+
+        currentID++;
+        studentID.innerText = `學生編號：${currentID}`;
+      }
+    });
+
+    init();
+  </script>
+
+</body>
+</html>

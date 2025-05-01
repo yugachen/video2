@@ -1,37 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>影片截圖紀錄器</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    video {
+      max-width: 90%;
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.5rem 1.2rem;
+      font-size: 1rem;
+      margin: 1rem;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #studentID {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      color: #666;
+    }
+    #message {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>影片截圖紀錄器</h1>
+  <div id="studentID">學生編號：--</div>
+
+  <video id="video" controls>
+    <source src="995.mp4" type="video/mp4">
+    您的瀏覽器不支援 video 標籤。
+  </video>
+
+  <button id="captureBtn">暫停並紀錄</button>
+  <div id="message"></div>
+
 <script>
-const scriptURL = "你的 Script URL"; // 換成你的 Apps Script 部署網址
+const scriptURL = "https://script.google.com/macros/s/你的GAS網址/exec";
 let currentID = null;
 
 async function init() {
   try {
     const res = await fetch(scriptURL);
     const json = await res.json();
-    currentID = json.nextVideoID || 1;
+    currentID = json.nextID || 1;
   } catch {
-    currentID = 1;
+    currentID = Math.floor(Math.random() * 1000) + 1;
   }
   document.getElementById("studentID").innerText = `學生編號：${currentID}`;
 }
-const video = document.getElementById('myVideo');
-video.addEventListener('pause', () => {
-  document.getElementById("sound").play();
-  const timestamp = video.currentTime.toFixed(2) + "秒";
+
+function captureAndRecord() {
+  const video = document.getElementById('video');
+  const currentTime = video.currentTime.toFixed(2) + "秒";
+
+  // 暫停影片
+  video.pause();
+
+  const description = `影片暫停於 ${currentTime}`;
+
   fetch(scriptURL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       id: currentID,
-      description: "影片暫停於 " + timestamp,
+      description: description,
       time: new Date().toISOString()
+      // 影片截圖器不用 mode
     })
   })
+  .then(res => res.text())
   .then(() => {
+    document.getElementById("message").innerText = "紀錄成功！";
     currentID++;
     document.getElementById("studentID").innerText = `學生編號：${currentID}`;
   })
   .catch(() => {
-    alert("上傳失敗，請稍後重試！");
+    document.getElementById("message").innerText = "紀錄失敗，請重試！";
   });
-});
+}
+
+document.getElementById('captureBtn').addEventListener('click', captureAndRecord);
+
 init();
 </script>
+
+</body>
+</html>

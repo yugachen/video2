@@ -44,7 +44,7 @@ async function init() {
   try {
     const res = await fetch(scriptURL);
     const json = await res.json();
-    currentID = json.nextID || 1;
+    currentID = json.nextVideoID || 1;
   } catch {
     currentID = Math.floor(Math.random() * 1000) + 1;
   }

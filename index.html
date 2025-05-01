@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -33,22 +32,20 @@
     你的瀏覽器不支援影片播放
   </video>
 
-  <div id="studentID"></div>
-
+  <div id="studentID">學生編號載入中...</div>
   <audio id="sound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbx6Opi_vWo4IpRiCygCgubK2n_agQpb8I9EODh_cPhwy06RsV5wSnqtXeaQt9c53k8D/exec"; // ⚡ 換成你的 Script URL
-
+const scriptURL = "https://script.google.com/macros/s/AKfycbx6Opi_vWo4IpRiCygCgubK2n_agQpb8I9EODh_cPhwy06RsV5wSnqtXeaQt9c53k8D/exec";
 let currentID = null;
 
 async function init() {
   try {
     const res = await fetch(scriptURL);
     const json = await res.json();
-    currentID = json.nextFlowerID || 1;
+    currentID = json.nextVideoID || 1;
   } catch {
-    currentID = 1;
+    currentID = Math.floor(Math.random() * 1000) + 1000;
   }
   document.getElementById("studentID").innerText = `學生編號：${currentID}`;
 }
@@ -57,14 +54,20 @@ const video = document.getElementById('myVideo');
 video.addEventListener('pause', () => {
   document.getElementById("sound").play();
   const timestamp = video.currentTime.toFixed(2) + "秒";
+
   fetch(scriptURL, {
     method: "POST",
+    mode: "cors",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       id: currentID,
       description: "影片暫停於 " + timestamp,
       time: new Date().toISOString()
     })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("上傳失敗");
+    return res.text();
   })
   .then(() => {
     currentID++;

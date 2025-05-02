@@ -23,49 +23,13 @@
     <source src="995.mp4" type="video/mp4" />
     你的瀏覽器不支援影片播放
   </video>
-  <div id="studentID">載入中…</div>
+  <div id="studentID">影片暫停時會顯示時間戳</div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwxnaxQ2kq7_UY0Il_BEAl8HfkoaraY3alcdHHnQriB1M-h5oIDYNa44G5RrxIcHgUK4Q/exec";
-let currentID = null;
-
-async function init() {
-  try {
-    const res = await fetch(scriptURL);
-    const json = await res.json();
-    currentID = json.videoNextID || Math.floor(Math.random() * 1000) + 1;
-    document.getElementById("studentID").innerText = `學生編號：${currentID}`;
-  } catch (e) {
-    console.error(e);
-    document.getElementById("studentID").innerText = "載入失敗";
-  }
-}
-
 document.getElementById('myVideo').addEventListener('pause', () => {
-  document.getElementById("sound").play();
   const timestamp = document.getElementById('myVideo').currentTime.toFixed(2) + " 秒";
-
-  fetch(scriptURL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id: currentID,
-      description: `影片暫停於 ${timestamp}`,
-      time: new Date().toISOString()
-    })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error("上傳失敗");
-    return res.text();
-  })
-  .then(() => {
-    currentID++;
-    document.getElementById("studentID").innerText = `學生編號：${currentID}`;
-  })
-  .catch(() => alert("上傳失敗，請稍後重試！"));
+  document.getElementById("studentID").innerText = `影片暫停於：${timestamp}`;
 });
-
-init();
 </script>
 </body>
 </html>
